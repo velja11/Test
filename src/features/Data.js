@@ -15,6 +15,33 @@ const Data = () => {
       .catch((err) => console.error(err));
   }, []);
 
+  useEffect(() => {
+    const wss = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
+
+    if (firstFive) {
+      wss.onopen = () => {
+        firstFive.map((item) => {
+          return wss.send(
+            JSON.stringify({
+              event: "subscribe",
+              channel: "ticker",
+              symbol: `t${item.toUpperCase()}`,
+            })
+          );
+        });
+      };
+
+      wss.onmessage = (event) => {
+        let data = JSON.parse(event.data);
+        console.log(data);
+      };
+
+      return () => {
+        wss.close();
+      };
+    }
+  }, [firstFive]);
+
   return (
     <div style={{ textAlign: "center" }}>
       {firstFive.map((item) => {
